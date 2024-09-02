@@ -12,7 +12,7 @@ Project theme = ext.has("themePkg") ? project(":lib-multisrc:$themePkg") : null
 if (theme != null) evaluationDependsOn(theme.path)
 
 android {
-    compileSdkVersion AndroidConfig.compileSdk
+    compileSdk 32
     namespace AndroidConfig.namespace
 
     sourceSets {
@@ -30,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion AndroidConfig.minSdk
+        minSdk 24
         targetSdkVersion AndroidConfig.targetSdk
         applicationIdSuffix project.parent.name + "." + project.name
         versionCode theme == null ? extVersionCode : theme.baseVersionCode + overrideVersionCode
