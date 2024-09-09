@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.animeextension.ru.anilibria
 
 import android.app.Application
-import android.content.SharedPreferences
 import android.util.Log
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceScreen
@@ -28,54 +27,30 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
-    override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val videoQualityPref =
-            ListPreference(screen.context).apply {
-                key = PREF_QUALITY_KEY
-                title = PREF_QUALITY_TITLE
-                entries = PREF_QUALITY_ENTRIES
-                entryValues = PREF_QUALITY_VALUES
-                setDefaultValue(PREF_QUALITY_DEFAULT)
-                summary = "%s"
 
-                setOnPreferenceChangeListener { _, newValue ->
-                    val selected = newValue as String
-                    val index = findIndexOfValue(selected)
-                    val entry = entryValues[index] as String
-                    preferences.edit().putString(key, entry).commit()
-                }
-            }
-        screen.addPreference(videoQualityPref)
-    }
+    override val name: String = "AnilibriaTV"
 
-    override val baseUrl: String
-        get() = "https://api.anilibria.tv/v3"
-    override val lang: String
-        get() = "ru"
-    override val name: String
-        get() = "AnilibriaTV"
-    override val supportsLatest: Boolean
-        get() = true
+    override val baseUrl: String = "https://anilibria.tv"
 
-    private val siteURL: String
-        get() = "https://anilibria.tv"
+    private val apiUrl: String = "https://api.anilibria.tv/v3"
 
-    private val apiHeaders: Headers
-        get() = Headers.Builder()
-            .add("User-Agent", "Aniyomi Anilibria extension v1.1")
-            .add("Accept", "application/json")
-            .add("Charset", "UTF-8")
-            .build()
+    override val lang: String = "ru"
 
-    private val defaultRemoveFilter: String
-        get() = "torrents,player.rutube,names.alternative,type.full_string,season.week_day"
+    override val supportsLatest: Boolean = true
 
-    private val defaultSearchFilter: String
-        get() = "names,posters,id"
+    private val apiHeaders: Headers = Headers.Builder()
+        .add("User-Agent", "Aniyomi Anilibria extension v1.1")
+        .add("Accept", "application/json")
+        .add("Charset", "UTF-8")
+        .build()
+
+    private val defaultRemoveFilter: String = "torrents,player.rutube,names.alternative,type.full_string,season.week_day"
+
+    private val defaultSearchFilter: String = "names,posters,id"
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
-    private val preferences: SharedPreferences by lazy {
+    private val preferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
@@ -99,7 +74,7 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
             anime.title = it.names?.ru ?: it.names?.en ?: "Неизвестно"
             // if it.posters?.small?.url
             if (it.posters?.small?.url != null) {
-                anime.thumbnail_url = siteURL + it.posters?.medium?.url
+                anime.thumbnail_url = baseUrl + it.posters?.medium?.url
             }
             anime.url = "/title?id=${it.id}&playlist_type=array&remove=$defaultRemoveFilter"
             animeList.add(anime)
@@ -133,10 +108,10 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
     override fun animeDetailsParse(response: Response): SAnime {
         val details = json.decodeFromString<SingleTitle>(response.body.string())
         return SAnime.create().apply {
-            url = siteURL + "/release/" + details.code + ".html"
+            url = baseUrl + "/release/" + details.code + ".html"
             title = details.names?.ru ?: details.names?.en ?: "Неизвестно"
             description = buildDescription(details)
-            thumbnail_url = siteURL + details.posters?.small?.url
+            thumbnail_url = baseUrl + details.posters?.small?.url
             genre = details.genres.joinToString(", ")
             status =
                 when (details.status.code) {
@@ -174,8 +149,8 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
                     episode_number = it.episode.toFloat()
                     url =
                         "" +
-                        response.request.url.toString().replace("playlist_type=array", "playlist_type=object") +
-                        "&filter=player.list[${ it.episode }],player.host"
+                            response.request.url.toString().replace("playlist_type=array", "playlist_type=object") +
+                            "&filter=player.list[${ it.episode }],player.host"
                     date_upload = it.createdTimestamp * 1000
                 },
             )
@@ -259,7 +234,7 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
 
     override fun latestUpdatesParse(response: Response): AnimesPage = titleListParse(response)
 
-    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/title/updates?remove=$defaultRemoveFilter&page=$page&items_per_page=8&playlist_type=array", apiHeaders)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$apiUrl/title/updates?remove=$defaultRemoveFilter&page=$page&items_per_page=8&playlist_type=array", apiHeaders)
 
     // ============================== Popular ==============================
 
@@ -267,13 +242,13 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
 
     override fun popularAnimeRequest(page: Int): Request =
         GET(
-            "$baseUrl/title/search/advanced?query={status.code}>0&remove=$defaultRemoveFilter&order_by=in_favorites&sort_direction=1&page=$page&items_per_page=8&playlist_type=array",
+            "$apiUrl/title/search/advanced?query={status.code}>0&remove=$defaultRemoveFilter&order_by=in_favorites&sort_direction=1&page=$page&items_per_page=8&playlist_type=array",
             apiHeaders,
         )
 
     // ============================== Search ===============================
 
-    private val customFilters = AniLibriaTVApiV3Filter(baseUrl, client, apiHeaders)
+    private val customFilters = AniLibriaTVApiV3Filter(apiUrl, client, apiHeaders)
 
     override fun getFilterList() = customFilters.getFilterList()
 
@@ -285,7 +260,7 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
         return if (query.startsWith(PREFIX_SEARCH)) {
             Log.d("searchAnimeRequest", "Ping from link-gen")
             val title = query.removePrefix(PREFIX_SEARCH).removeSuffix(".html")
-            client.newCall(GET("$baseUrl/title?code=$title&playlist_type=array"))
+            client.newCall(GET("$apiUrl/title?code=$title&playlist_type=array"))
                 .awaitSuccess()
                 .use(::searchAnimeByCodeParse)
         } else {
@@ -310,5 +285,25 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
         Log.d("searchAnimeRequest", "Url: $url")
         Log.d("searchAnimeRequest", "------------------------")
         return GET(url, apiHeaders)
+    }
+
+    // ============================== Settings ===============================
+
+    override fun setupPreferenceScreen(screen: PreferenceScreen) {
+        ListPreference(screen.context).apply {
+            key = PREF_QUALITY_KEY
+            title = PREF_QUALITY_TITLE
+            entries = PREF_QUALITY_ENTRIES
+            entryValues = PREF_QUALITY_VALUES
+            setDefaultValue(PREF_QUALITY_DEFAULT)
+            summary = "%s"
+
+            setOnPreferenceChangeListener { _, newValue ->
+                val selected = newValue as String
+                val index = findIndexOfValue(selected)
+                val entry = entryValues[index] as String
+                preferences.edit().putString(key, entry).commit()
+            }
+        }.also(screen::addPreference)
     }
 }
