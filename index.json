@@ -1,3 +1,22 @@
 [
-  
+  {
+    "name": "Aniyomi: AniLibria",
+    "pkg": "eu.kanade.tachiyomi.animeextension.ru.anilibria",
+    "apk": "aniyomi-ru.anilibria-v14.2.apk",
+    "lang": "ru",
+    "code": 2,
+    "version": "14.2",
+    "nsfw": 0,
+    "hasReadme": 0,
+    "hasChangelog": 0,
+    "sources": [
+      {
+        "name": "AnilibriaTV",
+        "lang": "ru",
+        "id": "1863285870847166123",
+        "baseUrl": "https://anilibria.tv",
+        "versionId": 1
+      }
+    ]
+  }
 ]
