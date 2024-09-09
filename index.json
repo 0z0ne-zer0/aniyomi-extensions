@@ -2,10 +2,10 @@
   {
     "name": "Aniyomi: AniLibria",
     "pkg": "eu.kanade.tachiyomi.animeextension.ru.anilibria",
-    "apk": "aniyomi-ru.anilibria-v14.2.apk",
+    "apk": "aniyomi-ru.anilibria-v14.3.apk",
     "lang": "ru",
-    "code": 2,
-    "version": "14.2",
+    "code": 3,
+    "version": "14.3",
     "nsfw": 0,
     "hasReadme": 0,
     "hasChangelog": 0,
