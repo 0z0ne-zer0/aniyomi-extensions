@@ -85,7 +85,15 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
         if (details.description != null) {
             description.append("\n\n${ details.description ?: "" }")
         }
-
+        if (details.franchises.size != 0) {
+            description.append("\n\n")
+            details.franchises.forEach { franchises ->
+                description.append(franchises.franchise?.name + "\nПорядок просмотра:\n")
+                franchises.releases.forEach {
+                    description.append("[${it.names?.ru}]($baseUrl/release/${it.code}.html)\n")
+                }
+            }
+        }
         return description.toString()
     }
 
