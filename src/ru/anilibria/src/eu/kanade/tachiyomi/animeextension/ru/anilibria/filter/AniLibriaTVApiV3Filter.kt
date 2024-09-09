@@ -164,7 +164,7 @@ class AniLibriaTVApiV3Filter(
     // ============================== Filter Builder ==============================
 
     fun getSearchParameters(page: Int, query: String, filters: AnimeFilterList): String {
-        var basestring = "$baseUrl/title/search"
+        val basestring = "$baseUrl/title/search"
         var searchStr = ""
         var orderStr = ""
         var orderDirectionStr = ""

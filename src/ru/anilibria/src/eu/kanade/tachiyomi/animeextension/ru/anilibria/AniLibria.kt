@@ -18,6 +18,7 @@ import eu.kanade.tachiyomi.animesource.model.Video
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.await
+import eu.kanade.tachiyomi.network.awaitSuccess
 import kotlinx.serialization.json.Json
 import okhttp3.Headers
 import okhttp3.Request
@@ -86,6 +87,8 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
         private val PREF_QUALITY_VALUES by lazy {
             PREF_QUALITY_ENTRIES.map { it.substringBefore("p") }.toTypedArray()
         }
+
+        const val PREFIX_SEARCH = "prefix_path:"
     }
 
     private fun titleListParse(response: Response): AnimesPage {
@@ -277,6 +280,27 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
     // private class TitleFilter : AnimeFilter.Text("Название", "")
 
     override fun searchAnimeParse(response: Response): AnimesPage = titleListParse(response)
+
+    override suspend fun getSearchAnime(page: Int, query: String, filters: AnimeFilterList): AnimesPage {
+        return if (query.startsWith(PREFIX_SEARCH)) {
+            Log.d("searchAnimeRequest", "Ping from link-gen")
+            val title = query.removePrefix(PREFIX_SEARCH).removeSuffix(".html")
+            client.newCall(GET("$baseUrl/title?code=$title&playlist_type=array"))
+                .awaitSuccess()
+                .use(::searchAnimeByCodeParse)
+        } else {
+            super.getSearchAnime(page, query, filters)
+        }
+    }
+
+    private fun searchAnimeByCodeParse(response: Response): AnimesPage {
+        val details = animeDetailsParse(response).apply {
+            setUrlWithoutDomain(response.request.url.toString())
+            initialized = true
+        }
+
+        return AnimesPage(listOf(details), false)
+    }
 
     override fun searchAnimeRequest(page: Int, query: String, filters: AnimeFilterList): Request {
         val url = customFilters.getSearchParameters(page, query, filters)
