@@ -213,7 +213,7 @@ class AniLibriaTVApiV3Filter(
                     }
                     Log.d("searchAnimeRequest", "Added year: $yearStr")
                     if (yearStr != "") {
-                        filterStr += " ({season.year} in ($yearStr)) and"
+                        filterStr += "({season.year} in ($yearStr)) and "
                     }
                 }
                 is SeasonFilter -> { // ---Season
@@ -230,7 +230,7 @@ class AniLibriaTVApiV3Filter(
                         }
                         Log.d("searchAnimeRequest", "Added season: $seasonStr")
                         if (seasonStr != "") {
-                            filterStr += " ({season.code} in ($seasonStr)) and"
+                            filterStr += "({season.code} in ($seasonStr)) and "
                         }
                     }
                 }
@@ -246,7 +246,7 @@ class AniLibriaTVApiV3Filter(
                     }
                     Log.d("searchAnimeRequest", "Added genres: $genresStr")
                     if (genresStr != "") {
-                        filterStr += " (($genresStr) in {genres}) and"
+                        filterStr += "(($genresStr) in {genres}) and "
                     }
                 }
                 is StatusFilter -> { // ---Status
@@ -263,7 +263,7 @@ class AniLibriaTVApiV3Filter(
                         }
                         Log.d("searchAnimeRequest", "Added statuses: $statusStr")
                         if (statusStr != "") {
-                            filterStr += " ({status.code} in ($statusStr)) and"
+                            filterStr += "({status.code} in ($statusStr)) and "
                         }
                     }
                 }
@@ -281,7 +281,7 @@ class AniLibriaTVApiV3Filter(
                         }
                         Log.d("searchAnimeRequest", "Added title types: $titleTypeStr")
                         if (titleTypeStr != "") {
-                            filterStr += " ({type.code} in ($titleTypeStr)) and"
+                            filterStr += "({type.code} in ($titleTypeStr)) and "
                         }
                     }
                 }
@@ -300,7 +300,7 @@ class AniLibriaTVApiV3Filter(
                     }
                     Log.d("searchAnimeRequest", "Added voice actors: $voiceActorsStr")
                     if (voiceActorsStr != "") {
-                        filterStr += " (($voiceActorsStr) in {team.voice}) and"
+                        filterStr += "(($voiceActorsStr) in {team.voice}) and "
                     }
                 }
                 is TranslatorsFilter -> { // ---Translators
@@ -315,7 +315,7 @@ class AniLibriaTVApiV3Filter(
                     }
                     Log.d("searchAnimeRequest", "Added translators: $translatorsStr")
                     if (translatorsStr != "") {
-                        filterStr += " (($translatorsStr) in {team.translator}) and"
+                        filterStr += "(($translatorsStr) in {team.translator}) and "
                     }
                 }
                 is EditorsFilter -> { // ---Editors
@@ -330,7 +330,7 @@ class AniLibriaTVApiV3Filter(
                     }
                     Log.d("searchAnimeRequest", "Added editors: $editorsStr")
                     if (editorsStr != "") {
-                        filterStr += " (($editorsStr) in {team.editing}) and"
+                        filterStr += "(($editorsStr) in {team.editing}) and "
                     }
                 }
                 is DecoratorsFilter -> { // ---Decorators
@@ -345,7 +345,7 @@ class AniLibriaTVApiV3Filter(
                     }
                     Log.d("searchAnimeRequest", "Added decorators: $decoratorsStr")
                     if (decoratorsStr != "") {
-                        filterStr += " (($decoratorsStr) in {team.decor}) and"
+                        filterStr += "(($decoratorsStr) in {team.decor}) and "
                     }
                 }
                 is TimingFilter -> { // ---Timing
@@ -360,7 +360,7 @@ class AniLibriaTVApiV3Filter(
                     }
                     Log.d("searchAnimeRequest", "Added timers: $timingStr")
                     if (timingStr != "") {
-                        filterStr += " (($timingStr) in {team.timing}) and"
+                        filterStr += "(($timingStr) in {team.timing}) and "
                     }
                 }
 
@@ -375,14 +375,14 @@ class AniLibriaTVApiV3Filter(
 
         if (query.isNotEmpty()) {
             searchStr = if (filterStr != "") {
-                "({names.en}~=\"$query\" or {names.ru}~=\"$query\") and"
+                "({names.en}~=\"$query\" or {names.ru}~=\"$query\")"
             } else {
                 "search=$query"
             }
         }
 
         val totalstring = if (filterStr != "") {
-            Regex(" and\$").replace("$basestring/advanced?$modifiers&$orderStr&$orderDirectionStr&query=$searchStr$filterStr", "")
+            Regex(" and \$").replace("$basestring/advanced?$modifiers&$orderStr&$orderDirectionStr&query=$filterStr$searchStr", "")
         } else {
             "$basestring?$searchStr&$modifiers"
         }

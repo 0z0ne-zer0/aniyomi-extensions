@@ -66,23 +66,6 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
         const val PREFIX_SEARCH = "prefix_path:"
     }
 
-    private fun titleListParse(response: Response): AnimesPage {
-        val animeList = mutableListOf<SAnime>()
-        val responseJson = json.decodeFromString<TitleList>(response.body.string())
-        responseJson.list.forEach {
-            val anime = SAnime.create()
-            anime.title = it.names?.ru ?: it.names?.en ?: "Неизвестно"
-            // if it.posters?.small?.url
-            if (it.posters?.small?.url != null) {
-                anime.thumbnail_url = baseUrl + it.posters?.medium?.url
-            }
-            anime.url = "/title?id=${it.id}&playlist_type=array&remove=$defaultRemoveFilter"
-            animeList.add(anime)
-        }
-        val hasNextPage = responseJson.pagination.currentPage < responseJson.pagination.pages
-        return AnimesPage(animeList, hasNextPage)
-    }
-
     // ============================== Details ==============================
 
     private fun buildDescription(details: SingleTitle): String {
@@ -102,13 +85,16 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
         if (details.description != null) {
             description.append("\n\n${ details.description ?: "" }")
         }
+
         return description.toString()
     }
 
+    override fun animeDetailsRequest(anime: SAnime): Request = GET(apiUrl + anime.url, apiHeaders)
+
     override fun animeDetailsParse(response: Response): SAnime {
         val details = json.decodeFromString<SingleTitle>(response.body.string())
-        return SAnime.create().apply {
-            url = baseUrl + "/release/" + details.code + ".html"
+        val anime = SAnime.create().apply {
+            url = "/release/" + details.code + ".html"
             title = details.names?.ru ?: details.names?.en ?: "Неизвестно"
             description = buildDescription(details)
             thumbnail_url = baseUrl + details.posters?.small?.url
@@ -122,9 +108,15 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
                     else -> SAnime.UNKNOWN
                 }
         }
+        Log.d("animeDetailsParse", "------------------------")
+        Log.d("animeDetailsParse", "URL: ${anime.url}")
+        Log.d("animeDetailsParse", "------------------------")
+        return anime
     }
 
     // ============================== Episodes =============================
+
+    override fun episodeListRequest(anime: SAnime): Request = GET(apiUrl + anime.url, apiHeaders)
 
     override fun episodeListParse(response: Response): List<SEpisode> {
         val details = json.decodeFromString<SingleTitle>(response.body.string())
@@ -305,5 +297,24 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
                 preferences.edit().putString(key, entry).commit()
             }
         }.also(screen::addPreference)
+    }
+
+    // ============================== Utils ===============================
+
+    private fun titleListParse(response: Response): AnimesPage {
+        val animeList = mutableListOf<SAnime>()
+        val responseJson = json.decodeFromString<TitleList>(response.body.string())
+        responseJson.list.forEach {
+            val anime = SAnime.create().apply {
+                title = it.names?.ru ?: it.names?.en ?: "Неизвестно"
+                if (it.posters?.small?.url != null) {
+                    thumbnail_url = baseUrl + it.posters?.medium?.url
+                }
+                url = "/title?id=${it.id}&playlist_type=array&remove=$defaultRemoveFilter"
+            }
+            animeList.add(anime)
+        }
+        val hasNextPage = responseJson.pagination.currentPage < responseJson.pagination.pages
+        return AnimesPage(animeList, hasNextPage)
     }
 }
