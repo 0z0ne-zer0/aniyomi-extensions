@@ -149,8 +149,8 @@ class AniLibria : ConfigurableAnimeSource, AnimeHttpSource() {
                     episode_number = it.episode.toFloat()
                     url =
                         "" +
-                            response.request.url.toString().replace("playlist_type=array", "playlist_type=object") +
-                            "&filter=player.list[${ it.episode }],player.host"
+                        response.request.url.toString().replace("playlist_type=array", "playlist_type=object") +
+                        "&filter=player.list[${ it.episode }],player.host"
                     date_upload = it.createdTimestamp * 1000
                 },
             )
