@@ -99,9 +99,9 @@ jobs:
       - name: Build extensions (chunk ${{ matrix.chunk }})
         env:
           CI_CHUNK_NUM: ${{ matrix.chunk }}
-          ALIAS: ${{ secrets.RELEASE_KEYSTORE_ALIAS }}
+          RELEASE_KEYSTORE_ALIAS: ${{ secrets.RELEASE_KEYSTORE_ALIAS }}
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: ./gradlew -p src assembleRelease
 
       - name: Upload APKs (chunk ${{ matrix.chunk }})
